@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pillow>=10.3.0
+torch
+torchvision
+numpy>=1.26.0
+faiss-cpu
+sqlalchemy
+pydantic
+aiofiles
+requests
+opencv-python-headless
