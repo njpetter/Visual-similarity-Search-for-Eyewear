@@ -1,152 +1,76 @@
-# Visual Similarity Search for Eyewear
+# 👓 Visual Similarity Search for Eyewear
 
-An AI-powered visual search platform that allows users to find similar eyewear products by uploading an image.
+An AI-powered visual search engine that allows users to find eyewear by uploading an image. The system uses Deep Learning to understand visual style and retrieves similar products from a catalog.
 
-## 🎯 Problem Statement
-
-Traditional text search for eyewear often fails because users struggle to describe specific styles, frame shapes, or textures. This system enables users to upload an image (e.g., celebrity wearing glasses, old pair photo) and find visually similar products.
+## 🚀 Features
+- **Visual Search:** Upload an image to find similar glasses.
+- **Filters:** Narrow down results by Price, Brand, Material, Color, and Frame Style.
+- **AI Attributes:** Automatically detects attributes like "Aviator" or "Black" using a classifier.
+- **Feedback Loop:** Tracks "Relevant" clicks to boost popular products.
+- **Multi-Modal:** Supports text modifiers (e.g., upload black glasses + text "but in gold").
 
 ## 🏗️ System Architecture
 
-```
-User Upload → Preprocessing → Feature Extraction (ResNet50) → Vector Search (FAISS) → Filtered Results
-                                    ↓
-                            Attribute Recognition (Style Classifier)
-                                    ↓
-                            Feedback Loop (Click Tracking)
-```
+The system follows a clean separation between the **AI Inference Layer** and **Data Storage Layer**, ensuring modularity and scalability.
+
+![System Architecture Diagram](architecture.png)
+
+### Architecture Overview
+
+**1. AI Inference Layer:**
+- **Feature Extraction:** Uses **ResNet50** (pre-trained on ImageNet) to extract 2048-dimensional embeddings.
+- **Attribute Recognition:** Classifies visual traits independently of the database.
+- **Preprocessing:** Handles resizing, normalization, and smart cropping.
+
+**2. Data Storage Layer:**
+- **Vector Database (FAISS):** Stores high-dimensional embeddings for sub-millisecond similarity search.
+- **Structured Database (SQLite):** Stores product metadata (Price, Brand, Material) for filtering.
+
+### Data Flow
+1. **Ingestion Pipeline:**
+   ```
+   Catalog Images → Preprocessing → ResNet50 → Embeddings → FAISS + SQLite
+   ```
+2. **Search Pipeline:**
+   ```
+   User Image → Preprocessing → ResNet50 → Embedding → FAISS Search → Filter → Rank → Results
+   ```
+3. **Feedback Loop:**
+   ```
+   User Clicks → Feedback Storage → Relevance Update → Improved Rankings
+   ```
 
 ## 🛠️ Tech Stack
+- **Backend:** FastAPI (Python)
+- **AI/ML:** PyTorch, torchvision, FAISS
+- **Database:** SQLite (Metadata), FAISS (Vectors)
+- **Frontend:** HTML/CSS/JS
 
-- **Deep Learning Model**: ResNet50 (pre-trained on ImageNet) for feature extraction
-- **Vector Database**: FAISS (Facebook AI Similarity Search) for efficient nearest neighbor search
-- **Structured Database**: SQLite for metadata (brand, price, material)
-- **API Framework**: FastAPI
-- **Distance Metric**: Cosine Similarity (measures angle between vectors, better for normalized embeddings)
+## 🧠 Design Choices
+- **ResNet50:** Chosen for its balance between accuracy and speed. We removed the final classification layer to extract a **2048-dimensional feature vector** that mathematically represents the visual style.
+- **Cosine Similarity:** Used instead of Euclidean distance because we care about the *angle* (style/shape) of the feature vectors rather than their magnitude.
+- **Hybrid Search:** Combines vector similarity (Nearest Neighbors) with hard SQL filters (WHERE clauses) to ensure results are both visually similar and relevant to user constraints.
 
-## 📁 Project Structure
+## 🏃‍♂️ How to Run
 
-```
-Lenskart-A1.1/
-├── app/
-│   ├── __init__.py
-│   ├── main.py                 # FastAPI application
-│   ├── models.py               # Database models
-│   ├── feature_extractor.py    # AI model for embeddings
-│   ├── attribute_recognizer.py # Style classification
-│   ├── vector_db.py            # FAISS operations
-│   ├── database.py             # SQLite operations
-│   └── feedback.py             # Feedback loop logic
-├── data/
-│   ├── images/                 # Catalog images
-│   ├── embeddings/             # Stored embeddings
-│   └── db.sqlite              # SQLite database
-├── static/                     # Frontend assets
-├── uploads/                    # User uploaded images
-├── requirements.txt
-└── README.md
-```
+1. **Install Dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-## 🚀 Quick Start
+2. **Download Data:**
+   ```bash
+   python download_images.py
+   ```
 
-> **📖 For detailed step-by-step instructions, see [QUICK_START_GUIDE.md](QUICK_START_GUIDE.md)**
+3. **Build Database (Ingestion):**
+   ```bash
+   python reset_and_ingest.py
+   ```
 
-### Quick Setup (5 Steps)
+4. **Start Server:**
+   ```bash
+   uvicorn app.main:app --reload
+   ```
 
-**1. Install Dependencies:**
-```bash
-pip install -r requirements.txt
-```
-
-**2. Prepare Image Dataset:**
-Place eyewear images in `data/images/` directory (JPG/PNG format), or run:
-```bash
-python download_sample_images.py
-```
-
-**3. Run Image Ingestion Pipeline:**
-```bash
-python -m app.ingest_images
-```
-
-**4. Start the Server:**
-```bash
-uvicorn app.main:app --reload
-```
-
-**5. Open Web Interface:**
-Visit `http://localhost:8000` in your browser
-
-**That's it!** 🎉 You can now search for similar eyewear products.
-
-## 🔍 How It Works
-
-### Feature Extraction
-
-- Uses **ResNet50** (pre-trained on ImageNet) to extract 2048-dimensional feature vectors
-- Images are preprocessed: resized to 224x224, normalized
-- Embeddings capture visual features: shape, color, texture, style
-
-### Similarity Search
-
-- Uses **Cosine Similarity** to measure similarity between vectors
-- FAISS enables fast approximate nearest neighbor search
-- Returns top-K most similar products with similarity scores (0-1, where 1 = identical)
-
-### Attribute Recognition
-
-- Classifies eyewear style: Aviator, Wayfarer, Round, Square, Rimless, Transparent Frame
-- Uses transfer learning from ResNet features
-- Helps filter and categorize results
-
-### Feedback Loop
-
-- Tracks user clicks on search results (relevant/not relevant)
-- Boosts products that are frequently clicked for specific visual styles
-- Improves search quality over time
-
-## 📊 API Endpoints
-
-- `GET /` - Web interface (HTML)
-- `POST /search` - Upload image and get similar products
-- `GET /products/{id}` - Get product details
-- `POST /feedback` - Submit feedback on search results
-- `GET /stats` - System statistics
-
-See `SETUP.md` for detailed setup instructions.
-
-## 🎨 Features
-
-- ✅ Visual similarity search
-- ✅ Multi-attribute filtering (price, brand, material)
-- ✅ Automatic style classification
-- ✅ Feedback-based learning
-- ✅ Fast vector search
-- ✅ Clean API design
-- 🎁 **Smart Cropping** (Bonus): Automatically detects eyewear in busy photos
-- 🎁 **Multi-Modal Search** (Bonus): Combine image + text modifiers (e.g., "but in tortoise shell color")
-
-## 📝 Model Details
-
-**Model**: ResNet50 (torchvision)
-- Pre-trained on ImageNet (1.2M images, 1000 classes)
-- Feature vector size: 2048 dimensions
-- Why ResNet50: Excellent balance of accuracy and speed, widely used for image similarity
-
-**Distance Metric**: Cosine Similarity
-- Formula: cos(θ) = (A·B) / (||A|| × ||B||)
-- Range: -1 to 1, typically used as 0-1 (after normalization)
-- Advantage: Better for high-dimensional vectors, ignores magnitude
-
-## 🔄 Pipeline Flow
-
-1. **Ingestion**: Catalog images → Preprocessing → ResNet50 → Embeddings → FAISS + SQLite
-2. **Search**: User image → Preprocessing → ResNet50 → Embedding → FAISS search → Filter → Rank → Results
-3. **Learning**: User clicks → Feedback storage → Product boosting → Improved rankings
-
-## 📈 Performance
-
-- Search latency: < 500ms for 10,000 products
-- Feature extraction: ~100ms per image
-- Accuracy: High visual relevance for similar styles, colors, and shapes
-
+5. **Open:** Go to [http://localhost:8000](http://localhost:8000)
