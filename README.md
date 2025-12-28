@@ -1,4 +1,4 @@
-# 👓 Visual Similarity Search for Eyewear
+# 👓 Visual Similarity Search for Eyewear(A1.1)
 
 An AI-powered visual search engine that allows users to find eyewear by uploading an image. The system uses Deep Learning to understand visual style and retrieves similar products from a catalog.
 
