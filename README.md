@@ -49,35 +49,35 @@ Lenskart-A1.1/
 
 ## 🚀 Quick Start
 
-### 1. Install Dependencies
+> **📖 For detailed step-by-step instructions, see [QUICK_START_GUIDE.md](QUICK_START_GUIDE.md)**
 
+### Quick Setup (5 Steps)
+
+**1. Install Dependencies:**
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Prepare Image Dataset
+**2. Prepare Image Dataset:**
+Place eyewear images in `data/images/` directory (JPG/PNG format), or run:
+```bash
+python download_sample_images.py
+```
 
-Place eyewear images in `data/images/` directory. Images should be in JPG or PNG format.
-
-### 3. Run Image Ingestion Pipeline
-
-This will process all images, extract features, and populate the databases:
-
+**3. Run Image Ingestion Pipeline:**
 ```bash
 python -m app.ingest_images
 ```
 
-### 4. Start the API Server
-
+**4. Start the Server:**
 ```bash
 uvicorn app.main:app --reload
 ```
 
-The API will be available at `http://localhost:8000`
+**5. Open Web Interface:**
+Visit `http://localhost:8000` in your browser
 
-### 5. Access the Web Interface
-
-Open `http://localhost:8000` in your browser to use the visual search interface.
+**That's it!** 🎉 You can now search for similar eyewear products.
 
 ## 🔍 How It Works
 
